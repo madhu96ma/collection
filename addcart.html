@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add to Cart</title>
+    <style>
+        #cart-summary {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        #cart-items-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #cart-items-list li {
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #cart-items-list li:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-details {
+            flex-grow: 1;
+        }
+
+        .cart-item-actions button {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        #checkout-button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #checkout-button:hover {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Details</h1>
+
+    <div id="product-details">
+    </div>
+
+    <div id="add-to-cart-section" style="display: none;">
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" value="1" min="1">
+        <button onclick="addToCart()">Add to Cart</button>
+    </div>
+
+    <div id="cart-summary">
+        <h2>Cart Summary</h2>
+        <ul id="cart-items-list">
+            </ul>
+        <p>Total Quantity: <span id="total-quantity">0</span></p>
+        <p>Total Price: Rs.<span id="total-price">0.00</span></p>
+        <button id="checkout-button" onclick="checkout()">Checkout</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productDetailsDiv = document.getElementById('product-details');
+            const addToCartSection = document.getElementById('add-to-cart-section');
+            const storedProduct = localStorage.getItem('currentProduct');
+
+            if (storedProduct) {
+                const product = JSON.parse(storedProduct);
+
+                const productNameElement = document.createElement('h2');
+                productNameElement.textContent = product.name;
+
+                const productPriceElement = document.createElement('p');
+                productPriceElement.textContent = `Price: Rs.${product.price}`;
+
+                const productImageElement = document.createElement('img');
+                productImageElement.src = product.image;
+                productImageElement.alt = product.name;
+                productImageElement.style.maxWidth = '200px'; // Adjust as needed
+
+                productDetailsDiv.appendChild(productNameElement);
+                productDetailsDiv.appendChild(productImageElement);
+                productDetailsDiv.appendChild(productPriceElement);
+
+                // Show the "Add to Cart" section
+                addToCartSection.style.display = 'block';
+
+            } else {
+                productDetailsDiv.textContent = 'No product information found.';
+            }
+            // Optionally, you might want to clear the stored data after displaying it
+            // localStorage.removeItem('currentProduct');
+
+            // Initialize cart data from local storage if it exists
+            loadCart();
+        });
+
+        let cartItems = [];
+        const cartItemsList = document.getElementById('cart-items-list');
+        const totalQuantitySpan = document.getElementById('total-quantity');
+        const totalPriceSpan = document.getElementById('total-price');
+
+        function loadCart() {
+            const storedCart = localStorage.getItem('cart');
+            if (storedCart) {
+                cartItems = JSON.parse(storedCart);
+                displayCartItems();
+                updateCartSummary();
+            }
+        }
+
+        function addToCart() {
+            const storedProduct = localStorage.getItem('currentProduct');
+            if (!storedProduct) {
+                alert('Product information is missing.');
+                return;
+            }
+
+            const product = JSON.parse(storedProduct);
+            const quantityInput = document.getElementById('quantity');
+            const quantity = parseInt(quantityInput.value);
+
+            if (isNaN(quantity) || quantity < 1) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+
+            // Check if the product is already in the cart
+            const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
+
+            if (existingItemIndex > -1) {
+                // If the product exists, update the quantity
+                cartItems[existingItemIndex].quantity += quantity;
+            } else {
+                // If the product is new to the cart, add it
+                cartItems.push({ ...product, quantity: quantity });
+            }
+
+            // Save the updated cart to local storage
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+
+            // Update the cart display and summary
+            displayCartItems();
+            updateCartSummary();
+
+            alert(`${quantity} item(s) of ${product.name} added to the cart!`);
+
+            // Optionally reset the quantity input
+            quantityInput.value = 1;
+        }
+
+        function displayCartItems() {
+            cartItemsList.innerHTML = ''; // Clear the current list
+            cartItems.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div class="cart-item-details">
+                        ${item.name} - Quantity: ${item.quantity} - Price: Rs.${(item.price * item.quantity).toFixed(2)}
+                    </div>
+                    <div class="cart-item-actions">
+                        <button onclick="changeQuantity(${index}, -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button onclick="changeQuantity(${index}, 1)">+</button>
+                        <button onclick="removeItem(${index})">Remove</button>
+                    </div>
+                `;
+                cartItemsList.appendChild(listItem);
+            });
+        }
+
+        function changeQuantity(index, change) {
+            if (cartItems[index].quantity + change > 0) {
+                cartItems[index].quantity += change;
+                localStorage.setItem('cart', JSON.stringify(cartItems));
+                displayCartItems();
+                updateCartSummary();
+            } else if (change === -1) {
+                removeItem(index); // If decreasing quantity would go to 0, remove the item
+            }
+        }
+
+        function removeItem(index) {
+            cartItems.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+            displayCartItems();
+            updateCartSummary();
+        }
+
+        function updateCartSummary() {
+            let totalQuantity = 0;
+            let totalPrice = 0;
+
+            cartItems.forEach(item => {
+                totalQuantity += item.quantity;
+                totalPrice += item.price * item.quantity;
+            });
+
+            totalQuantitySpan.textContent = totalQuantity;
+            totalPriceSpan.textContent = totalPrice.toFixed(2);
+
+            // Optionally disable checkout button if cart is empty
+            const checkoutButton = document.getElementById('checkout-button');
+            checkoutButton.disabled = cartItems.length === 0;
+        }
+
+        function checkout() {
+            if (cartItems.length > 0) {
+                // In a real application, you would send the cart data to a server for processing
+                alert(`Checkout initiated!\nTotal items: ${totalQuantitySpan.textContent}\nTotal amount: Rs.${totalPriceSpan.textContent}`);
+
+                // Clear the cart after successful (simulated) checkout
+                cartItems = [];
+                localStorage.removeItem('cart');
+                displayCartItems();
+                updateCartSummary();
+            } else {
+                alert('Your cart is empty. Please add items before checking out.');
+            }
+        }
+    </script>
+</body>
+</html>

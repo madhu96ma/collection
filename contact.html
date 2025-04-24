@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Account Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="auth-buttons">
+            <button id="login-btn">Login</button>
+            <button id="signin-btn">Sign In</button>
+            <button id="logout-btn" style="display: none;">Logout</button>
+            <div id="user-display" style="display: none;">
+                <p>Welcome, <span id="user-name-display"></span>!</p>
+            </div>
+        </div>
+
+        <div id="login-form" class="form" style="display: none;">
+            <h2>Login</h2>
+            <div class="input-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" placeholder="Enter your password">
+            </div>
+            <button id="login-submit">Login</button>
+            <p id="login-message" class="message"></p>
+        </div>
+
+        <div id="signin-form" class="form" style="display: none;">
+            <h2>Sign In</h2>
+            <div class="input-group">
+                <label for="signin-name">Name:</label>
+                <input type="text" id="signin-name" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+                <label for="signin-email">Email:</label>
+                <input type="email" id="signin-email" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label for="signin-password">Password:</label>
+                <input type="password" id="signin-password" placeholder="Enter your password">
+            </div>
+            <button id="signin-submit">Sign In</button>
+            <p id="signin-message" class="message"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
